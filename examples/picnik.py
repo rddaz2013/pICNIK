@@ -60,12 +60,12 @@ class DataExtraction(object):
                                   to 'utf8', 'utf16','latin1'. For more information on the python standar encoding:
                                   (https://docs.python.org/3/library/codecs.html#standard-encodings)
         """
-    
-        print("Files to be used: \n{}\n ".format(flist))
+
+        print(f"Files to be used: \n{flist}\n ")
         DFlis         =   self.DFlis
         Beta          =   self.Beta
         BetaCorrCoeff =   self.BetaCC
-        T0            =   self.T0            
+        T0            =   self.T0
         print(f'Reading files and creating DataFrames...\n')
         for item in flist:
             #csv files can use a tab or a coma as separator.
@@ -95,7 +95,7 @@ class DataExtraction(object):
                                        right=0.5)
                 DF['dw/dt'] = DF[DF.columns[0]]
                 DF['dw/dt'] = dwdt 
-                
+
                 #computes the heating rate
                 LR = linregress(DF[DF.columns[0]],                            
                                 DF[DF.columns[1]])
@@ -127,7 +127,7 @@ class DataExtraction(object):
                                        right=0.5)
                 DF['dw/dt'] = DF[DF.columns[0]]
                 DF['dw/dt'] = dwdt 
-                
+
                 #computes the heating rate
                 LR = linregress(DF[DF.columns[0]],
                                 DF[DF.columns[1]])
@@ -163,7 +163,7 @@ class DataExtraction(object):
         DFlist = self.DFlis
         NDFl = self.seg_DFlis
         print('The temperature range was set to ({0:0.1f},{1:0.1f}) K'.format((T0),(Tf)))
-        print(f'Computing conversion values...')
+        print('Computing conversion values...')
         for item in DFlist:
                 #filters the DataFrames based on the temperature limits 
                 item = item.loc[(item['Temperature [K]'] > T0) & (item['Temperature [K]'] < Tf)]     
@@ -188,33 +188,27 @@ class DataExtraction(object):
         #To create the Isoconversional DataFrames interpolation is needed. 
         #In order to make the interpolation the x values must be strictly in ascending order.
         #The next block of code evaluates if the i-th value is bigger than the i-1-th, if so, 
-        #the value is appended to the corresponding list. 
+        #the value is appended to the corresponding list.
         for i in range(len(NDFl)):
             #The initial values are those of the lower limit of the temperature range.
             a = [NDFl[i]['alpha'].values[0]]
             Temp = [NDFl[i]['Temperature [K]'].values[0]]
             time = [NDFl[i][DFlist[i].columns[0]].values[0]]
-            diff = [NDFl[i]['da/dt'].values[1]] 
+            diff = [NDFl[i]['da/dt'].values[1]]
             for j in range(len(NDFl[i]['alpha'].values)):
                 if NDFl[i]['alpha'].values[j] == a[-1]:
                     pass
-                #If the i-th value is bigger than the i-1-th
-                #its corresponding values of time, temperature 
-                #and conversion rate and itself are stored
-                #in a corresponding list.
                 elif NDFl[i]['alpha'].values[j] > a[-1]:
                     a.append(NDFl[i]['alpha'].values[j])
                     Temp.append(NDFl[i]['Temperature [K]'].values[j])
                     time.append(NDFl[i][NDFl[i].columns[0]].values[j])
                     diff.append(NDFl[i]['da/dt'].values[j])
-                else:
-                    pass
             alpha.append(np.array(a))
             T.append(np.array(Temp))
             t.append(np.array(time))
             da_dt.append(np.array(diff))
-        print(f'Done')
-        
+        print('Done')
+
         self.seg_DFlis = NDFl      #list of segmented DataFrames
         self.alpha     = alpha     #list of arrays of conversion values for each heating rate
         self.T         = T         #list of arrays of temperatures corresponding to a conversion value
@@ -236,13 +230,13 @@ class DataExtraction(object):
         plt.axvline(x=(Tf),alpha=0.8,color='red',ls='--',lw=1.2)         #temperature upper limit
         plt.ylabel('mass [%]')
         plt.xlabel('Temperature [K]')
-        plt.xlim((T0-20),(Tf+20)) 
+        plt.xlim((T0-20),(Tf+20))
         plt.legend(frameon=True)
         plt.grid(True)
 
         plt.show()
 #-----------------------------------------------------------------------------------------------------------
-    def Isoconversion(self, advanced = False, method='points', N = 1000, d_a = 0.001):    
+    def Isoconversion(self, advanced = False, method='points', N = 1000, d_a = 0.001):
         """
         Constructs the isoconversional DataFrames.
 
@@ -271,22 +265,28 @@ class DataExtraction(object):
         t     = self.t
         da_dt = self.da_dt
         Beta  = self.Beta
-        
-        TempIsoDF    = self.TempIsoDF      
-        timeIsoDF    = self.timeIsoDF     
-        diffIsoDF    = self.diffIsoDF      
-        TempAdvIsoDF = self.TempAdvIsoDF   
-        timeAdvIsoDF = self.timeAdvIsoDF  
+
+        TempIsoDF    = self.TempIsoDF
+        timeIsoDF    = self.timeIsoDF
+        diffIsoDF    = self.diffIsoDF
+        TempAdvIsoDF = self.TempAdvIsoDF
+        timeAdvIsoDF = self.timeAdvIsoDF
         #The experimental set with the least points is selected as conversion 
         #array for the isoconversional coomputations because all the other data sets
         #have more points to interpolate a reliable function for the conversion array
         alps = np.array(alpha[-1])
-        print(f'Creating Isoconversion DataFrames...')
+        print('Creating Isoconversion DataFrames...')
         #The time, temperature and conversion rate values corresponding to conversion array
         #selected are pass atrightforward to the corresponding isoconversional DataFrame
-        TempIsoDF['HR '+str(np.round(Beta[-1], decimals = 1)) + ' K/min'] = np.round(T[-1], decimals = 4)
-        timeIsoDF['HR '+str(np.round(Beta[-1], decimals = 1)) + ' K/min'] = np.round(t[-1], decimals = 4)        
-        diffIsoDF['HR '+str(np.round(Beta[-1], decimals = 1)) + ' K/min'] = np.round(da_dt[-1], decimals = 4)        
+        TempIsoDF[f'HR {str(np.round(Beta[-1], decimals=1))} K/min'] = np.round(
+            T[-1], decimals=4
+        )
+        timeIsoDF[f'HR {str(np.round(Beta[-1], decimals=1))} K/min'] = np.round(
+            t[-1], decimals=4
+        )
+        diffIsoDF[f'HR {str(np.round(Beta[-1], decimals=1))} K/min'] = np.round(
+            da_dt[-1], decimals=4
+        )        
 
         for i in range(len(Beta)-1):
             #The interpolation functions to compute isoconversional values are constructed 
@@ -296,22 +296,28 @@ class DataExtraction(object):
                                   kind='cubic', 
                                   bounds_error=False, 
                                   fill_value="extrapolate")
-            #A column is added to the isoconversional DataFrames for each heating rate 
-            timeIsoDF['HR '+str(np.round(Beta[i], decimals = 1)) + ' K/min'] = np.round(inter_func(alps), decimals = 4)
+            #A column is added to the isoconversional DataFrames for each heating rate
+            timeIsoDF[f'HR {str(np.round(Beta[i], decimals=1))} K/min'] = np.round(
+                inter_func(alps), decimals=4
+            )
 
             inter_func2 = interp1d(alpha[i], 
                                    T[i], 
                                    kind='cubic', 
                                    bounds_error=False, 
                                    fill_value="extrapolate")
-            TempIsoDF['HR '+str(np.round(Beta[i], decimals = 1)) + ' K/min'] = np.round(inter_func2(alps), decimals = 4)
+            TempIsoDF[f'HR {str(np.round(Beta[i], decimals=1))} K/min'] = np.round(
+                inter_func2(alps), decimals=4
+            )
 
             inter_func3 = interp1d(alpha[i], 
                                    da_dt[i], 
                                    kind='cubic', 
                                    bounds_error=False, 
                                    fill_value="extrapolate")
-            diffIsoDF['HR '+str(np.round(Beta[i], decimals = 1)) + ' K/min'] = np.round(inter_func3(alps), decimals = 4)
+            diffIsoDF[f'HR {str(np.round(Beta[i], decimals=1))} K/min'] = np.round(
+                inter_func3(alps), decimals=4
+            )
 
         #Sorting the columns in ascending order
         colnames          = TempIsoDF.columns.tolist()
@@ -323,11 +329,11 @@ class DataExtraction(object):
         timeIsoDF         = timeIsoDF[colnames]       #Isoconversional DataFrame of time
         diffIsoDF.index   = alpha[-1]
         diffIsoDF         = diffIsoDF[colnames]       #Isoconversional DataFrame of conversion rate
-        
-        self.TempIsoDF  = TempIsoDF 
+
+        self.TempIsoDF  = TempIsoDF
         self.timeIsoDF  = timeIsoDF
         self.diffIsoDF  = diffIsoDF
-        
+
         if advanced == True:
         #Conversion array based on the number of points.
             if method == 'points':
@@ -345,24 +351,25 @@ class DataExtraction(object):
                                       kind='cubic', 
                                       bounds_error=False, 
                                       fill_value="extrapolate")
-                TempAdvIsoDF['HR '+str(np.round(Beta[i], decimals = 1)) + ' K/min'] = np.round(inter_func(adv_alps), decimals = 4)
+                TempAdvIsoDF[
+                    f'HR {str(np.round(Beta[i], decimals=1))} K/min'
+                ] = np.round(inter_func(adv_alps), decimals=4)
 
                 inter_func2 = interp1d(alpha[i], 
                                        t[i],
                                        kind='cubic', bounds_error=False, 
                                        fill_value="extrapolate")
-                timeAdvIsoDF['HR '+str(np.round(Beta[i], decimals = 1)) + ' K/min'] = np.round(inter_func2(adv_alps), decimals = 4)
-            
+                timeAdvIsoDF[
+                    f'HR {str(np.round(Beta[i], decimals=1))} K/min'
+                ] = np.round(inter_func2(adv_alps), decimals=4)
+
             timeAdvIsoDF.index = adv_alps
             TempAdvIsoDF.index = adv_alps
 
             self.TempAdvIsoDF = TempAdvIsoDF      #Isoconversional DataFrame of temperature for the advanced Vyazovkin method (aVy)
             self.timeAdvIsoDF = timeAdvIsoDF      #Isoconversional DataFrame of time for the advanced Vyazovkin method (aVy)
             self.d_a          = d_a               #Size of the \Delta\alpha step
-        else:
-            pass
-        
-        print(f'Done')
+        print('Done')
 
         return self.TempIsoDF, self.timeIsoDF, self.diffIsoDF, self.TempAdvIsoDF, self.timeAdvIsoDF
 #-----------------------------------------------------------------------------------------------------------        
@@ -524,9 +531,11 @@ class DataExtraction(object):
                        each heating rate in attribute Beta.
         """
         for i in range(len(self.DFlis)):
-            plt.plot(self.T[i],
-                     self.alpha[i],
-                     label=str(np.round(self.Beta[i],decimals=1))+' K/min')
+            plt.plot(
+                self.T[i],
+                self.alpha[i],
+                label=f'{str(np.round(self.Beta[i], decimals=1))} K/min',
+            )
             plt.xlabel('T [K]')
             plt.ylabel(r'$\alpha$')
             plt.legend()
@@ -542,9 +551,11 @@ class DataExtraction(object):
                        for each heating rate in attribute Beta.
         """
         for i in range(len(self.DFlis)):
-            plt.plot(self.T[i],
-                     self.da_dt[i],
-                     label=str(np.round(self.Beta[i],decimals=1))+' K/min')
+            plt.plot(
+                self.T[i],
+                self.da_dt[i],
+                label=f'{str(np.round(self.Beta[i], decimals=1))} K/min',
+            )
             plt.xlabel('T [K]')
             plt.ylabel(r'$\text{d}\alpha/\text{d}t [min$^{-1}$]')
             plt.legend()
@@ -561,9 +572,11 @@ class DataExtraction(object):
                        heating rate in attribute Beta.
         """
         for i in range(len(self.DFlis)):
-            plt.plot(self.t[i],
-                     self.alpha[i],
-                     label=str(np.round(self.Beta[i],decimals=1))+' K/min')
+            plt.plot(
+                self.t[i],
+                self.alpha[i],
+                label=f'{str(np.round(self.Beta[i], decimals=1))} K/min',
+            )
             plt.xlabel(self.DFlis[i].columns[0])
             plt.ylabel(self.DFlis[i].columns[4])
             plt.legend()
@@ -579,9 +592,11 @@ class DataExtraction(object):
                        each heating rate in attribute Beta.
         """
         for i in range(len(self.DFlis)):
-            plt.plot(self.t[i],
-                     self.da_dt[i],
-                     label=str(np.round(self.Beta[i],decimals=1))+' K/min')
+            plt.plot(
+                self.t[i],
+                self.da_dt[i],
+                label=f'{str(np.round(self.Beta[i], decimals=1))} K/min',
+            )
             plt.xlabel(self.DFlis[i].columns[0])
             plt.ylabel('$\alpha$')
             plt.legend()
@@ -660,7 +675,7 @@ class ActivationEnergy(object):
         Fr_b      = []
         diffIsoDF = self.diffIsoDF
         TempIsoDF = self.TempIsoDF
-        print(f'Friedman method: Computing activation energies...')
+        print('Friedman method: Computing activation energies...')
         for i in range(0,diffIsoDF.shape[0]):
         #Linear regression over all the conversion values in the isoconversional Dataframes
             y     = np.log(diffIsoDF.iloc[i].values)             #log(da_dt)
@@ -678,8 +693,8 @@ class ActivationEnergy(object):
         Fr_e = np.array(E_Fr_err)
         Fr_b   = np.array(Fr_b)
         #Tuple with the results: Activation energy, Standard deviation and ln[Af(a)]
-        self.E_Fr =  (E_Fr, Fr_e, Fr_b)                          
-        print(f'Done.')
+        self.E_Fr =  (E_Fr, Fr_e, Fr_b)
+        print('Done.')
         return self.E_Fr
 
 #-----------------------------------------------------------------------------------------------------------
@@ -709,7 +724,7 @@ class ActivationEnergy(object):
         E_OFW      = []
         E_OFW_err  = []
         TempIsoDF  = self.TempIsoDF
-        print(f'Ozawa-Flynn-Wall method: Computing activation energies...')        
+        print('Ozawa-Flynn-Wall method: Computing activation energies...')
         for i in range(TempIsoDF.shape[0]):  
         #Linear regression over all the conversion values in the isoconversional Dataframes
             y = (logB)                                           #log(\beta)
@@ -721,10 +736,10 @@ class ActivationEnergy(object):
             E_OFW.append(E_a_i)
 
         E_OFW   = np.array(E_OFW)
-        OFW_s = np.array(E_OFW_err)   
+        OFW_s = np.array(E_OFW_err)
         #Tuple with the results: Activation energy, Standard deviation
         self.E_OFW   = (E_OFW, OFW_s)
-        print(f'Done.')
+        print('Done.')
         return self.E_OFW
 #-----------------------------------------------------------------------------------------------------------
     def KAS(self):
@@ -750,7 +765,7 @@ class ActivationEnergy(object):
         E_KAS      = []
         E_KAS_err  = []
         TempIsoDF  = self.TempIsoDF
-        print(f'Kissinger-Akahira-Sunose method: Computing activation energies...')       
+        print('Kissinger-Akahira-Sunose method: Computing activation energies...')
         for i in range(TempIsoDF.shape[0]):  
         #Linear regression over all the conversion values in the isoconversional Dataframes   
             y = (logB)- np.log((TempIsoDF.iloc[i].values)**1.92)          #log[1/(T**1.92)]
@@ -764,8 +779,8 @@ class ActivationEnergy(object):
         E_KAS   = np.array(E_KAS)
         KAS_s = np.array(E_KAS_err)
         #Tuple with the results: Activation energy, Standard deviation
-        self.E_KAS   = (E_KAS, KAS_s) 
-        print(f'Done.')
+        self.E_KAS   = (E_KAS, KAS_s)
+        print('Done.')
         return self.E_KAS  
 #-----------------------------------------------------------------------------------------------------------
     def I_Temp(self, E, row_i, col_i, method):
@@ -994,25 +1009,25 @@ class ActivationEnergy(object):
         Beta      = self.Beta
         TempIsoDF = self.TempIsoDF
         #F values for a 95% confidence interval for (n-1) and (n-1) degreees of freedom
-        F      = [161.4, 19.00, 9.277, 6.388, 5.050, 4.284, 3.787, 3.438, 3.179,2.978,2.687] 
+        F      = [161.4, 19.00, 9.277, 6.388, 5.050, 4.284, 3.787, 3.438, 3.179,2.978,2.687]
         #F value for the n-1 degrees of freedom.
         #Subtracts 1 to n (len(B)) because of degrees of freedom and 1 because of python indexation
-        f      = F[len(Beta)-1-1] 
+        f      = F[len(Beta)-1-1]
         #quadrature method from parameter "method"
         method = method
         #Psi evaluation interval
-        E_p    = np.linspace(1,E+50,50)  
+        E_p    = np.linspace(1,E+50,50)
         #'True' value of the activation energy in kJ/mol for a given conversion (row_i)
-        E_min  = E          
+        E_min  = E
         #Variance of the 'True' activation energy              
-        s_min  = self.variance_Vy(E_min, row_i, method)   
+        s_min  = self.variance_Vy(E_min, row_i, method)
         #Variance of the activation energy array E_p 
         s      = np.array([self.variance_Vy(E_p[i], row_i, method) for i in range(len(E_p))])
 
         #Psi function moved towards negative values (f-1) in order 
         #to set the confidence limits such that \psy = 0 for those values
         Psy_to_cero = (s/s_min)-f-1      
-        
+
         #Interpolation function of \Psy vs E to find the roots
         #which are the confidence limits
         inter_func = interp1d(E_p,
@@ -1023,9 +1038,7 @@ class ActivationEnergy(object):
         #Finding the confidence limits
         zeros = np.array([fsolve(inter_func, E-150)[0],                 
                           fsolve(inter_func, E+150)[0]])
-        error = np.mean(np.array([abs(E-zeros[0]), abs(E-zeros[1])]))
-
-        return error         
+        return np.mean(np.array([abs(E-zeros[0]), abs(E-zeros[1])]))         
       
 #-----------------------------------------------------------------------------------------------------------
     def error_Vy(self,E, method):
@@ -1046,9 +1059,7 @@ class ActivationEnergy(object):
                                    energies obtained by the Vyazovkin method.  
         """         
 
-        error_Vy = np.array([self.psi_Vy(E[i], i,  method) for i in range(len(E))])
-
-        return error_Vy  
+        return np.array([self.psi_Vy(E[i], i,  method) for i in range(len(E))])  
 #-----------------------------------------------------------------------------------------------------------
     def Vy(self, bounds, method='senum-yang'):
         """
@@ -1076,20 +1087,22 @@ class ActivationEnergy(object):
                        computations of the activation energy of nonisothermal reactions in solids, Journal 
                        of Chemical Information and Computer Sciences 36 (1) (1996) 42–45.
         """
-        E_Vy       = []
-        Beta       = self.Beta 
+        Beta       = self.Beta
         IsoDF      = self.TempIsoDF
-        print(f'Vyazovkin method: Computing activation energies...')    
+        print('Vyazovkin method: Computing activation energies...')    
 
-        for k in range(len(IsoDF.index)):
-            E_Vy.append(minimize_scalar(self.omega, args=(k,method),bounds=bounds, method = 'bounded').x)
-
+        E_Vy = [
+            minimize_scalar(
+                self.omega, args=(k, method), bounds=bounds, method='bounded'
+            ).x
+            for k in range(len(IsoDF.index))
+        ]
         E_Vy = np.array(E_Vy)
 
         error     = self.error_Vy(E_Vy,method)
-        
-        self.E_Vy = (E_Vy, error) 
-        print(f'Done.')
+
+        self.E_Vy = (E_Vy, error)
+        print('Done.')
         return self.E_Vy     
    
 #-----------------------------------------------------------------------------------------------------------              
@@ -1109,11 +1122,7 @@ class ActivationEnergy(object):
         a = E/(self.R)
         b = inf
         c = sup
-        #Computation of the intagral defined in terms of the exponential integral
-        #calculated with scipy.special
-        J = a*(sp.expi(-a/c)-sp.expi(-a/b)) + c*np.exp(-a/c) - b*np.exp(-a/b)
-
-        return J
+        return a*(sp.expi(-a/c)-sp.expi(-a/b)) + c*np.exp(-a/c) - b*np.exp(-a/b)
 #-----------------------------------------------------------------------------------------------------------        
     def J_time(self, E, row_i, col_i, method = 'trapezoid'):
         """
@@ -1191,13 +1200,13 @@ class ActivationEnergy(object):
 
         Returns:      O       : Float. Value of the advanced omega function for a given E.
         """
-        TempAdvIsoDF = self.TempAdvIsoDF
         timeAdvIsoDF = self.timeAdvIsoDF
         Beta         = self.Beta
         j            = row
         #Array from a comprehension list of factors of \Omega(Ea)
         #The variable of integration depends on the parameter var
         if var == 'Temperature':
+            TempAdvIsoDF = self.TempAdvIsoDF
             I_x = np.array([self.J_Temp(E,
                                         TempAdvIsoDF[TempAdvIsoDF.columns[i]][TempAdvIsoDF.index[j]],
                                         TempAdvIsoDF[TempAdvIsoDF.columns[i]][TempAdvIsoDF.index[j+1]]) 
@@ -1206,9 +1215,7 @@ class ActivationEnergy(object):
             I_B = I_x/Beta
             #Double sum
             omega_i = np.array([I_B[k]*((np.sum(1/(I_B)))-(1/I_B[k])) for k in range(len(Beta))])
-            O = np.array(np.sum((omega_i)))
-            return O
-  
+            return np.array(np.sum((omega_i)))
         elif var == 'time':
             I_B = np.array([self.J_time(E,
                                         row,
@@ -1217,8 +1224,7 @@ class ActivationEnergy(object):
                             for i in range(len(timeAdvIsoDF.columns))])
             #Double sum
             omega_i = np.array([I_B[k]*((np.sum(1/(I_B)))-(1/I_B[k])) for k in range(len(Beta))])
-            O = np.array(np.sum((omega_i)))
-            return O        
+            return np.array(np.sum((omega_i)))        
 #-----------------------------------------------------------------------------------------------------------
     def visualize_advomega(self,row,var='time',bounds=(1,300),N=1000, method='trapezoid'):
         """
@@ -1370,14 +1376,14 @@ class ActivationEnergy(object):
         #'True' value of the activation energy in kJ/mol for a given conversion (row_i)
         E_min  = E
         #Variance of the 'True' activation energy 
-        s_min  = self.variance_aVy(E_min, row_i,var, method) 
+        s_min  = self.variance_aVy(E_min, row_i,var, method)
         #Variance of the activation energy array E_p 
         s      = np.array([self.variance_aVy(E_p[i], row_i, var, method) for i in range(len(E_p))])
-        
+
         #Psi function moved towards negative values (f-1) in order 
         #to set the confidence limits such that \psy = 0 for those values
         Psy_to_cero = (s/s_min)-f-1
-        
+
         #Interpolation function of \Psy vs E to find the roots
         #which are the confidence limits
         inter_func = interp1d(E_p,
@@ -1388,10 +1394,8 @@ class ActivationEnergy(object):
         #Finding the confidence limits
         zeros = np.array([fsolve(inter_func, E-150)[0],
                           fsolve(inter_func, E+150)[0]])
-        
-        error = np.mean(np.array([abs(E-zeros[0]), abs(E-zeros[1])]))
 
-        return error 
+        return np.mean(np.array([abs(E-zeros[0]), abs(E-zeros[1])])) 
 #-----------------------------------------------------------------------------------------------------------            
     def error_aVy(self, E, var = 'time', method = 'trapezoid'):
         """
@@ -1411,9 +1415,9 @@ class ActivationEnergy(object):
                                     energies obtained by the Vyazovkin method.  
         """ 
         method = method
-        error_aVy = np.array([self.psi_aVy(E[i], i, var=var, method=method) for i in range(len(E))])
-
-        return error_aVy  
+        return np.array(
+            [self.psi_aVy(E[i], i, var=var, method=method) for i in range(len(E))]
+        )  
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -1450,7 +1454,7 @@ class ActivationEnergy(object):
 
         timeAdvIsoDF = self.timeAdvIsoDF
         Beta         = self.Beta
-        print(f'Advanced Vyazovkin method: Computing activation energies...')
+        print('Advanced Vyazovkin method: Computing activation energies...')
         #Computing and minimization of \Omega(E) for the conversion values in the isoconversional DataFrame    
         E_aVy        = [minimize_scalar(self.adv_omega,bounds=bounds,args=(k,var,method), method = 'bounded').x 
                         for k in range(len(timeAdvIsoDF.index)-1)]
@@ -1460,7 +1464,7 @@ class ActivationEnergy(object):
         error   = self.error_aVy(E_aVy, var, method)
 
         self.E_aVy =  (E_aVy, error)
-        print(f'Done.')
+        print('Done.')
         return self.E_aVy
 #-----------------------------------------------------------------------------------------------------------
     def T_prom(self,TempIsoDF):
@@ -1478,9 +1482,7 @@ class ActivationEnergy(object):
         for i in range(len(TempIsoDF.index.values)):
             Ti = np.mean(TempIsoDF.iloc[i].values)
             T_prom.append(Ti)
-        T_prom = np.array(T_prom)
-        
-        return T_prom
+        return np.array(T_prom)
 #-----------------------------------------------------------------------------------------------------------
 
     def export_Ea(self, E_Fr=False, E_OFW=False, E_KAS=False, E_Vy=False, E_aVy=False, file_t="xlsx" ):
@@ -1508,7 +1510,7 @@ class ActivationEnergy(object):
         TempIsoDF    = self.TempIsoDF
         Beta         = self.Beta
 
-        print(f"Exporting activation energies...")
+        print("Exporting activation energies...")
 
         TempAdvIsoDF = self.TempAdvIsoDF
         #The advanced Vyazovkin method has to be exported
@@ -1533,51 +1535,30 @@ class ActivationEnergy(object):
             adv_DF[ad_col[1]] = adv_Temp[1:]
             adv_DF[ad_col[2]] = aVy[0]
             adv_DF[ad_col[3]] = aVy[1]
-        
-            print(TempAdvIsoDF, adv_DF)
 
-        else:
-            pass
+            print(TempAdvIsoDF, adv_DF)
 
         #Conversion values for the isoconversional evaluations
         alps     = TempIsoDF.index.values
         #Mean values for temperature at isoconversional values
         Temp     = self.T_prom(TempIsoDF)
-        
-        columns = ['alpha']
-        columns.append('Temperature [K]')
 
+        columns = ['alpha', 'Temperature [K]']
         #If the value of a parameter is set to True two columns 
         #are added to the file: Activation energy values and its
-        #associated error  
+        #associated error
         if E_Fr == True:
             E_Fr = self.E_Fr
-            columns.append('Fr [kJ/mol]')
-            columns.append('Fr_error [kJ/mol]')
-        else:
-            pass
-
+            columns.extend(('Fr [kJ/mol]', 'Fr_error [kJ/mol]'))
         if E_OFW == True:
             E_OFW = self.E_OFW
-            columns.append('OFW [kJ/mol]')
-            columns.append('OFW_error [kJ/mol]')
-        else:
-            pass
-
+            columns.extend(('OFW [kJ/mol]', 'OFW_error [kJ/mol]'))
         if E_KAS == True:
             E_KAS = self.E_KAS
-            columns.append('KAS [kJ/mol]')
-            columns.append('KAS_error [kJ/mol]')
-        else:
-            pass
-
+            columns.extend(('KAS [kJ/mol]', 'KAS_error [kJ/mol]'))
         if E_Vy == True:
             E_Vy = self.E_Vy
-            columns.append('Vyazovkin [kJ/mol]')
-            columns.append('Vy_error [kJ/mol]')
-        else:
-            pass
-
+            columns.extend(('Vyazovkin [kJ/mol]', 'Vy_error [kJ/mol]'))
         #pandas.DataFrame to be converted to a xlsx or csv file
         DF_Nrgy = pd.DataFrame([], columns = columns)
         #The first column is conversion
@@ -1588,77 +1569,48 @@ class ActivationEnergy(object):
         if 'Fr [kJ/mol]' in columns:
             DF_Nrgy['Fr [kJ/mol]']=E_Fr[0]                 #Activation energies in kJ/mol
             DF_Nrgy['Fr_error [kJ/mol]']=E_Fr[1]           #Associated error in kJ/mol
-        else:
-            pass
         if 'OFW [kJ/mol]' in columns:
             DF_Nrgy['OFW [kJ/mol]']=E_OFW[0]               #Activation energies in kJ/mol
             DF_Nrgy['OFW_error [kJ/mol]']=E_OFW[1]         #Associated error in kJ/mol
-        else:
-            pass
         if 'KAS [kJ/mol]' in columns:
             DF_Nrgy['KAS [kJ/mol]'] = E_KAS[0]             #Activation energies in kJ/mol
             DF_Nrgy['KAS_error [kJ/mol]']=E_KAS[1]         #Associated error in kJ/mol
-        else:
-            pass
         if 'Vyazovkin [kJ/mol]' in columns:
             DF_Nrgy['Vyazovkin [kJ/mol]'] = E_Vy[0]        #Activation energies in kJ/mol
             DF_Nrgy['Vy_error [kJ/mol]']=E_Vy[1]           #Associated error in kJ/mol
-        else:
-            pass        
-
-
         #For methods Fr, KAS, OFW and Vy
         name1 = 'Activation_Energies_Results.'
         #For method aVy
         name2 = 'Advanced_Vyazovkin_Results.'
 
         #The format of the file is set with the parameter "file_t"
-        if(file_t=='xlsx'):
+        if (file_t=='xlsx'):
             
-            if len(columns) == 2:
-                pass
-            #else, create the corresponding file
-            else:
-                with pd.ExcelWriter(name1+'xlsx') as writer1:
+            if len(columns) != 2:
+                with pd.ExcelWriter(f'{name1}xlsx') as writer1:
                     DF_Nrgy.to_excel(writer1, sheet_name='Activation Energies',index=False)   
 
                 print('Results saved as {0}'.format(name1)) 
 
 
             if aVy == self.E_aVy:
-                with pd.ExcelWriter(name2+'xlsx') as writer2:
+                with pd.ExcelWriter(f'{name2}xlsx') as writer2:
                     adv_DF.to_excel(writer2, sheet_name='Advanced Vyazovkin Method',index=False)
                 print('Results saved as {0}'.format(name2)) 
-    
-            else:
-                pass
 
-            
-   
-        elif(file_t=='csv'):
+        elif (file_t=='csv'):
             #If no parameter was set to True, do nothing
-            if len(columns) == 2:
-                pass
-            #else, create the corresponding file
-            else:
-                DF_Nrgy.to_csv((name1+'csv'), 
-                               encoding='utf8', 
-                               sep=',',
-                               index=False)
+            if len(columns) != 2:
+                DF_Nrgy.to_csv(f'{name1}csv', encoding='utf8', sep=',', index=False)
 
-                print('Results saved as {0}'.format(name1)) 
+                print('Results saved as {0}'.format(name1))
             if aVy == self.E_aVy:
-                adv_DF.to_csv((name2+'csv'), 
-                               encoding='utf8', 
-                               sep=',',
-                               index=False)
-            else:
-                pass
-            print('Results saved as {0} and {1}'.format(name1,name2)) 
+                adv_DF.to_csv(f'{name2}csv', encoding='utf8', sep=',', index=False)
+            print('Results saved as {0} and {1}'.format(name1,name2))
         else:
             raise ValueError("File type not recognized")
 
-        print(f'Done.')        
+        print('Done.')        
 #-----------------------------------------------------------------------------------------------------------        
     def prediction(self, E = None, B = 1, T0 = 298.15, Tf=1298.15):
         """

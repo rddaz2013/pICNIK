@@ -14,10 +14,7 @@ def P4(a,integral = False):
     
     Returns:    f(a): Reaction model evaluated on the conversion degree
     """
-    if integral == True:
-        return a**(1/4)
-    else:
-        return 4*(a**(3/4))
+    return a**(1/4) if integral == True else 4*(a**(3/4))
 
 ### P3: $f\left(\alpha\right) = 3\alpha^{2/3}$
 
@@ -29,10 +26,7 @@ def P3(a,integral = False):
     
     Returns:    f(a): Reaction model evaluated on the conversion degree
     """
-    if integral == True:
-        return a**(1/3)
-    else:
-        return 3*(a**(2/3))
+    return a**(1/3) if integral == True else 3*(a**(2/3))
 
 ### P2: $f\left(\alpha\right) = 2\alpha^{1/2}$
 
@@ -44,10 +38,7 @@ def P2(a, integral = False):
     
     Returns:    f(a): Reaction model evaluated on the conversion degree
     """
-    if integral == True:
-        return a**(1/2)
-    else:
-        return 2*(a**(1/2))
+    return a**(1/2) if integral == True else 2*(a**(1/2))
 
 ### P2/3: $f\left(\alpha\right) = \frac{2}{3}\alpha^{-1/2}$
 
@@ -59,10 +50,7 @@ def P2_3(a, integral = False):
     
     Returns:    f(a): Reaction model evaluated on the conversion degree
     """
-    if integral == True:
-        return a**(3/2)
-    else:
-        return (2/3)*(a**(-1/2))
+    return a**(3/2) if integral == True else (2/3)*(a**(-1/2))
 
 ## Diffusion
 
@@ -76,10 +64,7 @@ def D1(a, integral = False):
     
     Returns:    f(a): Reaction model evaluated on the conversion degree
     """
-    if integral == True:
-        return a**2
-    else:
-        return (1/2)*a**(-1)
+    return a**2 if integral == True else (1/2)*a**(-1)
 
 ### Two dimensional D2: $f\left(\alpha\right) = \left[-\ln{\left(1-\alpha\right)}\right]^{-1}$
 
@@ -121,10 +106,7 @@ def F1(a, integral = False):
     
     Returns:    f(a): Reaction model evaluated on the conversion degree
     """
-    if integral == True:
-        return -(np.log(1-a))
-    else:
-        return 1-a
+    return -(np.log(1-a)) if integral == True else 1-a
 
 ## Avrami-Erofeev
 
